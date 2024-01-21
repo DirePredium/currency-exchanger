@@ -4,15 +4,104 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".view.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/frWallet"
+        android:name="com.direpredium.currencyexchanger.view.WalletFragment"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/currencyListLayout"
+        app:layout_constraintStart_toStartOf="@+id/moneyInputLayout"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/moneyInputLayout"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        app:counterMaxLength="1000"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toStartOf="@+id/currencyListLayout"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        android:inputType="numberDecimal"
+        app:errorEnabled="true"
+        app:layout_constraintTop_toBottomOf="@+id/frWallet">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/moneyInputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/currencyListLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/moneyInputLayout"
+        app:layout_constraintTop_toTopOf="@+id/moneyInputLayout">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/currencyListEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:rotation="90"
+        android:src="@drawable/ic_conversion_24"
+        app:layout_constraintEnd_toEndOf="@+id/currencyListLayout"
+        app:layout_constraintStart_toStartOf="@+id/moneyInputLayout"
+        app:layout_constraintTop_toBottomOf="@+id/moneyInputLayout" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tConvertedMoney"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toStartOf="@id/convertedCurrencyListLayout"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintBottom_toBottomOf="@id/convertedCurrencyListLayout"
+        android:text="0.0"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/convertedCurrencyListLayout"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tConvertedMoney"
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/convertedCurrencyListEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bConvert"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="@string/btnTextConvert"
+        app:layout_constraintEnd_toEndOf="@+id/convertedCurrencyListLayout"
+        app:layout_constraintStart_toStartOf="@+id/tConvertedMoney"
+        app:layout_constraintTop_toBottomOf="@+id/convertedCurrencyListLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

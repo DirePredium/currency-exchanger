@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Currency Exchanger</string>
+    <string name="hint_currency_pattern">0.0</string>
+    <string name="btnTextConvert">Convert</string>
+    <string name="convertdialog_title">Conversion</string>
+    <string name="convertdialog_supporting_text">Support text</string>
+    <string name="convertdialog_cancel">Cancel\n</string>
+    <string name="convertdialog_decline">Decline</string>
+    <string name="convertdialog_accept">Accept</string>
+    <string name="network_error">Network error</string>
+    <string name="network_error_accept">Connect again</string>
 </resources>
