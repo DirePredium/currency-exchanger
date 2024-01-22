@@ -2,6 +2,7 @@
 # Currency Exchanger
 
 ## Demo
+![Без имени-2](https://github.com/DirePredium/currency-exchanger/assets/97312136/6b1fef59-0ff0-4056-85b2-3131c35d2bc5)
 
 ## Before Running
 Fill in the BASE_URL parameter in the API config of the application which is located in
@@ -10,6 +11,17 @@ Fill in the BASE_URL parameter in the API config of the application which is loc
   app/src/main/res/raw/api_config.properties
 ```
 This application requires the path to the "currency-exchange-rates" repository, but it is not specifing in the path.
+**Response example**:
+```bash
+{
+"base":"EUR",
+"date":"2022-01-2",
+"rates": {
+    "USD":1.123,
+    "UAH":0.712
+  }
+}
+```
 
 ---
 For example.
