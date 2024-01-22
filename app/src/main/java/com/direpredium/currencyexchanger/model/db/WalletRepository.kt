@@ -10,7 +10,7 @@ class WalletRepository(private val database: CurrencyExchangerDatabase) {
     }
     suspend fun getByCurrency(currency: String) = database.walletDao().getByCurrency(currency)
     suspend fun updateWallets(vararg wallets: Wallet) = database.walletDao().updateWallets(*wallets)
-    suspend fun initWallet(currency : String, cash : Double) : Boolean {
+    suspend fun initWallet(currency : String, cash : String) : Boolean {
         if(database.walletDao().getByCurrency(currency) == null) {
             database.walletDao().insertAll(Wallet(currency, cash))
             return true

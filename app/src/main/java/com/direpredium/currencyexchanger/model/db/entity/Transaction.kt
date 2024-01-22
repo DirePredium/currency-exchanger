@@ -9,10 +9,10 @@ import java.math.BigDecimal
 @Entity
 data class Transaction (
     @ColumnInfo(name = "base_currency") val baseCurrency: String,
-    @ColumnInfo(name = "base_money") val baseMoney: Double,
+    @ColumnInfo(name = "base_money") val baseMoney: String,
     @ColumnInfo(name = "target_currency") val targetCurrency: String,
-    @ColumnInfo(name = "target_money") val targetMoney: Double,
-    @ColumnInfo(name = "commission") var commission: Double,
+    @ColumnInfo(name = "target_money") val targetMoney: String,
+    @ColumnInfo(name = "commission") var commission: String,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0

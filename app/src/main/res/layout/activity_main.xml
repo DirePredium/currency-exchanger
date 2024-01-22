@@ -6,27 +6,52 @@
     android:layout_height="match_parent"
     tools:context=".view.MainActivity">
 
+    <TextView
+        android:id="@+id/tBalances"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="@string/my_balances_text"
+        android:textSize="18sp"
+        android:textColor="@color/title_color"
+        app:layout_constraintEnd_toEndOf="@+id/frWallet"
+        app:layout_constraintStart_toStartOf="@+id/frWallet"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/frWallet"
         android:name="com.direpredium.currencyexchanger.view.WalletFragment"
         android:layout_width="0dp"
+        android:layout_marginTop="15dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="@+id/currencyListLayout"
         app:layout_constraintStart_toStartOf="@+id/moneyInputLayout"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tBalances" />
+
+    <TextView
+        android:id="@+id/tCurrencyExchange"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:text="@string/currency_exchange_text"
+        android:textSize="18sp"
+        android:textColor="@color/title_color"
+        app:layout_constraintEnd_toEndOf="@+id/currencyListLayout"
+        app:layout_constraintStart_toStartOf="@+id/moneyInputLayout"
+        app:layout_constraintTop_toBottomOf="@+id/frWallet" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/moneyInputLayout"
         android:layout_width="140dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:inputType="numberDecimal"
         app:counterMaxLength="1000"
-        android:layout_marginTop="50dp"
+        app:errorEnabled="true"
         app:layout_constraintEnd_toStartOf="@+id/currencyListLayout"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        android:inputType="numberDecimal"
-        app:errorEnabled="true"
-        app:layout_constraintTop_toBottomOf="@+id/frWallet">
+        app:layout_constraintTop_toBottomOf="@+id/tCurrencyExchange">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/moneyInputEditText"

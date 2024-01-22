@@ -9,4 +9,6 @@
     <string name="convertdialog_accept">Accept</string>
     <string name="network_error">Network error</string>
     <string name="network_error_accept">Connect again</string>
+    <string name="my_balances_text">My balances</string>
+    <string name="currency_exchange_text">Currency Exchange</string>
 </resources>

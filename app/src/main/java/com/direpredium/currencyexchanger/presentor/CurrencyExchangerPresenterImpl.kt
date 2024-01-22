@@ -16,6 +16,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Locale
 
 class CurrencyExchangerPresenterImpl(
@@ -39,7 +41,7 @@ class CurrencyExchangerPresenterImpl(
 
     private fun initEuroWallet() {
         CoroutineScope(Dispatchers.IO).launch {
-            walletRepository.initWallet("EUR", 1000.0)
+            walletRepository.initWallet("EUR", "1000.0")
         }
     }
 
@@ -70,7 +72,7 @@ class CurrencyExchangerPresenterImpl(
         }
     }
 
-    fun loadConvertedMoney(money: Double, baseCurrency: String, targetCurrency: String) {
+    fun loadConvertedMoney(money: String, baseCurrency: String, targetCurrency: String) {
         val exchangeRate = currencyModel.getLatestExchangeRate()
         val convertedMoney = convertMoney(
             baseCurrency,
@@ -86,9 +88,9 @@ class CurrencyExchangerPresenterImpl(
 
     private fun convertMoney(
         baseCurrency: String,
-        money: Double,
+        money: String,
         targetCurrency: String,
-    ): Double? {
+    ): BigDecimal? {
         val exchangeRate = currentExchangeRate ?: return null
         val rate = exchangeRate.getExchangeRate(baseCurrency, targetCurrency)
         if (rate != null) {
@@ -98,15 +100,19 @@ class CurrencyExchangerPresenterImpl(
     }
 
     private fun convertCounting(
-        money: Double,
+        money: String,
         rate: Double,
-        commission: Double = 0.0
-    ): Double {
-        return roundUp( money * rate * (1 - commission))
+        commission: String = "0.0"
+    ): BigDecimal {
+        return roundUp( BigDecimal(money) * BigDecimal(rate) * (BigDecimal(1) - BigDecimal(commission)))
     }
 
     private fun roundUp(num: Double) : Double {
         return String.format(Locale.US, "%.2f", num).toDouble()
+    }
+
+    private fun roundUp(num: BigDecimal) : BigDecimal {
+        return num.setScale(2, RoundingMode.HALF_EVEN)
     }
 
     fun startUpdatingRates() {
@@ -123,10 +129,10 @@ class CurrencyExchangerPresenterImpl(
         currencyModel.stopUpdating()
     }
 
-    fun showConvertDialog(baseCurrency : String, baseMoney : Double, targetCurrency : String) {
+    fun showConvertDialog(baseCurrency : String, baseMoney : String, targetCurrency : String) {
         CoroutineScope(Dispatchers.Main).launch {
-            convertMoney(baseCurrency,baseMoney, targetCurrency)?.let {
-                val transaction = Transaction(baseCurrency, baseMoney, targetCurrency, it, 0.0)
+            convertMoney(baseCurrency, baseMoney, targetCurrency)?.let {
+                val transaction = Transaction(baseCurrency, baseMoney, targetCurrency, it.toString(), "0.0")
                 withContext(Dispatchers.IO) {
                     calculateTransaction(transaction)
                 }
@@ -200,17 +206,19 @@ class CurrencyExchangerPresenterImpl(
         if (baseWallet == null || baseWallet == targetWallet) {
             return false
         }
-        baseWallet.cash -= roundUp(transaction.baseMoney * (1 + transaction.commission))
-        if (baseWallet.cash < 0) {
+        val transactionalSubtraction = roundUp(BigDecimal(transaction.baseMoney) * (BigDecimal(1) + BigDecimal(transaction.commission)))
+        val baseMoney = BigDecimal(baseWallet.cash) - transactionalSubtraction
+        if (baseMoney.toDouble() < 0) {
             return false
         }
+        baseWallet.cash = baseMoney.toString()
 
         if(targetWallet == null) {
             targetWallet = Wallet(transaction.targetCurrency, transaction.targetMoney)
             walletRepository.insertAll(targetWallet)
         }
-
-        targetWallet.cash += transaction.targetMoney
+        val sd = BigDecimal(targetWallet.cash) + BigDecimal(transaction.targetMoney)
+        targetWallet.cash = sd.toString()
         walletRepository.updateWallets(baseWallet, targetWallet)
         transactionRepository.insertAll(transaction)
 

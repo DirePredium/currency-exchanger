@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.core.text.isDigitsOnly
 import androidx.room.Room
 import com.direpredium.currencyexchanger.R
 import com.direpredium.currencyexchanger.databinding.ActivityMainBinding
@@ -22,11 +23,13 @@ import com.direpredium.currencyexchanger.model.network.entity.ExchangeRate
 import com.direpredium.currencyexchanger.model.network.exception.CustomException
 import com.direpredium.currencyexchanger.model.network.retrofit.RetrofitCurrencyRESTApi
 import com.direpredium.currencyexchanger.presentor.CurrencyExchangerPresenterImpl
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(), CurrencyExchangerView {
@@ -49,9 +52,9 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         binding.moneyInputEditText.addTextChangedListener(TextFieldChangeListener(::validateMoney))
         binding.bConvert.setOnClickListener {
             val baseCurrency = binding.currencyListEdit.text.toString()
-            val baseMoney = if(validateMoney()) {binding.moneyInputEditText.text.toString().toDouble()} else {return@setOnClickListener}
+            val baseMoney = if(validateMoney()) {binding.moneyInputEditText.text.toString()} else {return@setOnClickListener}
             val targetCurrency = binding.convertedCurrencyListEdit.text.toString()
-            if(baseCurrency == targetCurrency) {
+            if(baseCurrency == targetCurrency || baseMoney.isDigitsOnly()) {
                 return@setOnClickListener
             }
             presenterImpl.showConvertDialog(baseCurrency, baseMoney, targetCurrency)
@@ -101,7 +104,7 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         return Bundle().apply {
             wallets
                 .forEach { wallet ->
-                    putDouble(wallet.currency, wallet.cash)
+                    putDouble(wallet.currency, BigDecimal(wallet.cash).toDouble())
                 }
         }
     }
@@ -138,16 +141,16 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         val amount = binding.moneyInputEditText.text.toString().toDouble()
         val baseCurrency = binding.currencyListEdit.text.toString()
         val targetCurrency = binding.convertedCurrencyListEdit.text.toString()
-        presenterImpl.loadConvertedMoney(amount, baseCurrency, targetCurrency)
+        presenterImpl.loadConvertedMoney(BigDecimal(amount).toString(), baseCurrency, targetCurrency)
         return true
     }
 
-    override fun showConvertedMoney(convertedMoney: Double) {
-        binding.tConvertedMoney.text = String.format(Locale.US, "%.2f", convertedMoney)
+    override fun showConvertedMoney(convertedMoney: BigDecimal) {
+        binding.tConvertedMoney.text = String.format(Locale.US, "%.2f", convertedMoney.toDouble())
     }
 
     override fun showConvertDialog(transaction: Transaction) {
-        val commissionString = String.format(Locale.US, "%.2f", transaction.commission * 100)
+        val commissionString = String.format(Locale.US, "%.2f", BigDecimal(transaction.commission) * BigDecimal(100))
         MaterialAlertDialogBuilder(this)
             .setTitle(resources.getString(R.string.convertdialog_title))
             .setMessage("Convert ${transaction.baseMoney} ${transaction.baseCurrency} to ${transaction.targetMoney} ${transaction.targetCurrency} with a commission of $commissionString%?")

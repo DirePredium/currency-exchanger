@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(indices = [Index(value = ["currency"], unique = true)])
 data class Wallet (
     @ColumnInfo(name = "currency") val currency: String,
-    @ColumnInfo(name = "cash") var cash: Double,
+    @ColumnInfo(name = "cash") var cash: String,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
