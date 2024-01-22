@@ -19,6 +19,7 @@ import com.direpredium.currencyexchanger.model.db.entity.Wallet
 import com.direpredium.currencyexchanger.model.network.CurrencyRESTApi
 import com.direpredium.currencyexchanger.model.network.CurrencyModel
 import com.direpredium.currencyexchanger.model.network.entity.ExchangeRate
+import com.direpredium.currencyexchanger.model.network.exception.CustomException
 import com.direpredium.currencyexchanger.model.network.retrofit.RetrofitCurrencyRESTApi
 import com.direpredium.currencyexchanger.presentor.CurrencyExchangerPresenterImpl
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -160,7 +161,7 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
             .show()
     }
 
-    override fun showNetworkError() {
+    override fun showNetworkError(ex: CustomException) {
         val progressDialogView = LayoutInflater.from(this).inflate(R.layout.progress_dialog_content, null)
 
         if(isNetworkErrorDialogShowing) {
@@ -169,6 +170,7 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         MaterialAlertDialogBuilder(this)
             .setView(progressDialogView)
             .setTitle(resources.getString(R.string.network_error))
+            .setMessage(ex.userMessage)
             .setCancelable(false)
             .setPositiveButton(resources.getString(R.string.network_error_accept)) { dialog, which ->
                 isNetworkErrorDialogShowing = false

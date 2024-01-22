@@ -10,6 +10,7 @@ import com.direpredium.currencyexchanger.model.network.CurrencyModel
 import com.direpredium.currencyexchanger.model.network.entity.ExchangeRate
 import com.direpredium.currencyexchanger.model.network.entity.getCurrencies
 import com.direpredium.currencyexchanger.model.network.entity.getExchangeRate
+import com.direpredium.currencyexchanger.model.network.exception.CustomException
 import com.direpredium.currencyexchanger.view.CurrencyExchangerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -114,8 +115,8 @@ class CurrencyExchangerPresenterImpl(
         currencyModel.addFailExchangeRateListener(::showNetworkError)
     }
 
-    fun showNetworkError() {
-        view.showNetworkError()
+    fun showNetworkError(ex: CustomException) {
+        view.showNetworkError(ex)
     }
 
     fun stopUpdatingRates() {
@@ -196,11 +197,13 @@ class CurrencyExchangerPresenterImpl(
         val baseWallet = walletRepository.getByCurrency(transaction.baseCurrency)
         var targetWallet = walletRepository.getByCurrency(transaction.targetCurrency)
 
-        if (baseWallet == null || baseWallet.cash - transaction.baseMoney < 0 || baseWallet == targetWallet) {
+        if (baseWallet == null || baseWallet == targetWallet) {
             return false
         }
-
         baseWallet.cash -= roundUp(transaction.baseMoney * (1 + transaction.commission))
+        if (baseWallet.cash < 0) {
+            return false
+        }
 
         if(targetWallet == null) {
             targetWallet = Wallet(transaction.targetCurrency, transaction.targetMoney)
