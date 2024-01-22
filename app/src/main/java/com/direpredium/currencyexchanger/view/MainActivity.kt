@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
             val baseCurrency = binding.currencyListEdit.text.toString()
             val baseMoney = if(validateMoney()) {binding.moneyInputEditText.text.toString()} else {return@setOnClickListener}
             val targetCurrency = binding.convertedCurrencyListEdit.text.toString()
-            if(baseCurrency == targetCurrency || baseMoney.isDigitsOnly()) {
+            if(baseCurrency == targetCurrency) {
                 return@setOnClickListener
             }
             presenterImpl.showConvertDialog(baseCurrency, baseMoney, targetCurrency)
