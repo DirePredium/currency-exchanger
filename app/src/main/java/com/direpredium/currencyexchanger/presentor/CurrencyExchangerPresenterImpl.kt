@@ -1,12 +1,12 @@
 package com.direpredium.currencyexchanger.presentor
 
-import android.util.Log
 import com.direpredium.currencyexchanger.model.db.TransactionRepository
 import com.direpredium.currencyexchanger.model.db.WalletRepository
 import com.direpredium.currencyexchanger.model.db.entity.Transaction
 import com.direpredium.currencyexchanger.model.db.entity.Wallet
 import com.direpredium.currencyexchanger.model.db.entity.calculateCommission
 import com.direpredium.currencyexchanger.model.network.CurrencyModel
+import com.direpredium.currencyexchanger.model.network.CurrencyModelImpl
 import com.direpredium.currencyexchanger.model.network.entity.ExchangeRate
 import com.direpredium.currencyexchanger.model.network.entity.getCurrencies
 import com.direpredium.currencyexchanger.model.network.entity.getExchangeRate
@@ -24,7 +24,7 @@ class CurrencyExchangerPresenterImpl(
     private val view: CurrencyExchangerView,
     private val walletRepository: WalletRepository,
     private val transactionRepository: TransactionRepository,
-    private val currencyModel: CurrencyModel) {
+    private val currencyModel: CurrencyModel<ExchangeRate, CustomException>) {
     init {
         initEuroWallet()
     }
@@ -46,14 +46,18 @@ class CurrencyExchangerPresenterImpl(
     }
 
     fun loadUpdates(latestExchangeRate: ExchangeRate) {
-        currentExchangeRate = currencyModel.getLatestExchangeRate()
+        currentExchangeRate = currencyModel.getLatestUpdate()
         if (isExchangeRateChanged) {
             CoroutineScope(Dispatchers.Main).launch {
-                updateBaseCurrencies(latestExchangeRate)
-                view.updateTargetCurrencies(latestExchangeRate.getCurrencies())
-                view.updateConversion()
+                updateUI(latestExchangeRate)
             }
         }
+    }
+
+    private suspend fun updateUI(exchangeRate: ExchangeRate) {
+        updateBaseCurrencies(exchangeRate)
+        view.updateTargetCurrencies(exchangeRate.getCurrencies())
+        view.updateConversion()
     }
 
     private suspend fun updateBaseCurrencies(exchangeRate: ExchangeRate) {
@@ -73,7 +77,7 @@ class CurrencyExchangerPresenterImpl(
     }
 
     fun loadConvertedMoney(money: String, baseCurrency: String, targetCurrency: String) {
-        val exchangeRate = currencyModel.getLatestExchangeRate()
+        val exchangeRate = currencyModel.getLatestUpdate()
         val convertedMoney = convertMoney(
             baseCurrency,
             money,
@@ -117,8 +121,8 @@ class CurrencyExchangerPresenterImpl(
 
     fun startUpdatingRates() {
         currencyModel.startUpdating()
-        currencyModel.addExchangeRateListener(::loadUpdates)
-        currencyModel.addFailExchangeRateListener(::showNetworkError)
+        currencyModel.addListener(::loadUpdates)
+        currencyModel.addFailListener(::showNetworkError)
     }
 
     fun showNetworkError(ex: CustomException) {
@@ -157,14 +161,6 @@ class CurrencyExchangerPresenterImpl(
             }
             view.showWallets(wallets)
         }
-    }
-
-    fun loadTransactions() {
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val transactions = withContext(Dispatchers.IO) {
-//                repository.getAllTransactions()
-//            }
-//        }
     }
 
     fun convert(transaction: Transaction) {
@@ -221,12 +217,6 @@ class CurrencyExchangerPresenterImpl(
         targetWallet.cash = sd.toString()
         walletRepository.updateWallets(baseWallet, targetWallet)
         transactionRepository.insertAll(transaction)
-
-        Log.d("MyLog", "Size: ${transactionRepository.getAllTransaction().size}")
-        Log.d("MyLog", "Transactions: ")
-        transactionRepository.getAllTransaction().forEach {
-            Log.d("MyLog", it.toString())
-        }
         return true
     }
 

@@ -4,34 +4,26 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.core.text.isDigitsOnly
 import androidx.room.Room
 import com.direpredium.currencyexchanger.R
 import com.direpredium.currencyexchanger.databinding.ActivityMainBinding
 import com.direpredium.currencyexchanger.model.db.CurrencyExchangerDatabase
-import com.direpredium.currencyexchanger.model.db.TransactionRepository
-import com.direpredium.currencyexchanger.model.db.WalletRepository
+import com.direpredium.currencyexchanger.model.db.TransactionRepositoryImpl
+import com.direpredium.currencyexchanger.model.db.WalletRepositoryImpl
 import com.direpredium.currencyexchanger.model.db.entity.Transaction
 import com.direpredium.currencyexchanger.model.db.entity.Wallet
-import com.direpredium.currencyexchanger.model.network.CurrencyRESTApi
-import com.direpredium.currencyexchanger.model.network.CurrencyModel
-import com.direpredium.currencyexchanger.model.network.entity.ExchangeRate
+import com.direpredium.currencyexchanger.model.network.CurrencyModelImpl
 import com.direpredium.currencyexchanger.model.network.exception.CustomException
-import com.direpredium.currencyexchanger.model.network.retrofit.RetrofitCurrencyRESTApi
 import com.direpredium.currencyexchanger.presentor.CurrencyExchangerPresenterImpl
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.util.Locale
 
+private const val INIT_BASE_MONEY = 100.0
 class MainActivity : AppCompatActivity(), CurrencyExchangerView {
     private lateinit var binding: ActivityMainBinding
     private lateinit var presenterImpl: CurrencyExchangerPresenterImpl
@@ -42,19 +34,27 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         init()
-        binding.currencyListEdit.setOnItemClickListener {_,_,_,_ ->
+        setupListeners()
+    }
+
+    private fun setupListeners() {
+        binding.currencyListEdit.setOnItemClickListener { _, _, _, _ ->
             updateConversion()
         }
-        binding.convertedCurrencyListEdit.setOnItemClickListener {_,_,_,_ ->
+        binding.convertedCurrencyListEdit.setOnItemClickListener { _, _, _, _ ->
             updateConversion()
         }
         binding.moneyInputEditText.addTextChangedListener(TextFieldChangeListener(::updateConversion))
         binding.moneyInputEditText.addTextChangedListener(TextFieldChangeListener(::validateMoney))
         binding.bConvert.setOnClickListener {
             val baseCurrency = binding.currencyListEdit.text.toString()
-            val baseMoney = if(validateMoney()) {binding.moneyInputEditText.text.toString()} else {return@setOnClickListener}
+            val baseMoney = if (validateMoney()) {
+                binding.moneyInputEditText.text.toString()
+            } else {
+                return@setOnClickListener
+            }
             val targetCurrency = binding.convertedCurrencyListEdit.text.toString()
-            if(baseCurrency == targetCurrency) {
+            if (baseCurrency == targetCurrency) {
                 return@setOnClickListener
             }
             presenterImpl.showConvertDialog(baseCurrency, baseMoney, targetCurrency)
@@ -67,9 +67,9 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
             CurrencyExchangerDatabase::class.java,
             "currency-exchanger-database"
         ).build()
-        presenterImpl = CurrencyExchangerPresenterImpl(this, WalletRepository(db),  TransactionRepository(db), CurrencyModel())
+        presenterImpl = CurrencyExchangerPresenterImpl(this, WalletRepositoryImpl(db),  TransactionRepositoryImpl(db), CurrencyModelImpl())
         presenterImpl.loadWallets()
-        binding.moneyInputEditText.setText("100.00")
+        binding.moneyInputEditText.setText(INIT_BASE_MONEY.toString())
         updateConversion()
     }
 
@@ -84,6 +84,11 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
 
     override fun onPause() {
         super.onPause()
+        presenterImpl.stopUpdatingRates()
+    }
+
+    override fun onStop() {
+        super.onStop()
         presenterImpl.stopUpdatingRates()
     }
 
@@ -138,10 +143,10 @@ class MainActivity : AppCompatActivity(), CurrencyExchangerView {
         if (!validateMoney()) {
             return false
         }
-        val amount = binding.moneyInputEditText.text.toString().toDouble()
+        val baseMoney = binding.moneyInputEditText.text.toString().toDouble()
         val baseCurrency = binding.currencyListEdit.text.toString()
         val targetCurrency = binding.convertedCurrencyListEdit.text.toString()
-        presenterImpl.loadConvertedMoney(BigDecimal(amount).toString(), baseCurrency, targetCurrency)
+        presenterImpl.loadConvertedMoney(BigDecimal(baseMoney).toString(), baseCurrency, targetCurrency)
         return true
     }
 
